@@ -69,6 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent', // Force Google to show account selection
+          },
         },
       });
       
@@ -84,10 +88,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // Sign out with 'global' scope to clear session everywhere
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
         console.error('Error signing out:', error);
         throw error;
+      }
+      
+      // Force clear local state
+      setUser(null);
+      setSession(null);
+      
+      // Clear any remaining browser storage
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
       }
     } catch (error) {
       console.error('Sign out error:', error);
