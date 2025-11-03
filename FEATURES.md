@@ -105,7 +105,7 @@ USING (
 Add to `.env.local`:
 
 ```env
-HUGGINGFACE_API_TOKEN=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
+HUGGINGFACE_API_TOKEN=Your_HuggingFace_token
 ```
 
 ---
