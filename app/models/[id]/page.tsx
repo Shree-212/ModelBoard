@@ -5,14 +5,14 @@ import { supabase, Model } from '@/lib/supabase';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
-import { Tag, Calendar, Download, Heart, Play, ArrowLeft } from 'lucide-react';
+import { Tag, Calendar, Download, Heart, ExternalLink, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import ModelDemo from '@/components/ModelDemo';
 
 export default function ModelDetailPage() {
   const params = useParams();
   const [model, setModel] = useState<Model | null>(null);
   const [loading, setLoading] = useState(true);
-  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -35,15 +35,6 @@ export default function ModelDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTestModel = () => {
-    setTesting(true);
-    // Simulate testing
-    setTimeout(() => {
-      setTesting(false);
-      alert('Model test completed! (This is a demo)');
-    }, 2000);
   };
 
   if (loading) {
@@ -153,24 +144,18 @@ export default function ModelDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleTestModel}
-                disabled={testing}
-                className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {testing ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Testing...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-5 w-5 mr-2" />
-                    Test Model
-                  </>
-                )}
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              {model.notebook_url && (
+                <a
+                  href={model.notebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <ExternalLink className="h-5 w-5 mr-2" />
+                  View Notebook
+                </a>
+              )}
 
               {model.model_file_url && (
                 <a
@@ -183,6 +168,15 @@ export default function ModelDetailPage() {
                 </a>
               )}
             </div>
+
+            {/* Demo Widget */}
+            {model.demo_type && (
+              <ModelDemo
+                modelId={model.id}
+                demoType={model.demo_type}
+                apiEndpoint={model.api_endpoint}
+              />
+            )}
           </div>
         </div>
       </div>

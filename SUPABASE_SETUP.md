@@ -25,6 +25,10 @@ CREATE TABLE models (
   tags TEXT[] DEFAULT ARRAY[]::TEXT[],
   preview_image_url TEXT,
   model_file_url TEXT,
+  notebook_url TEXT,
+  is_public BOOLEAN DEFAULT true,
+  demo_type VARCHAR(50) DEFAULT 'text-to-text',
+  api_endpoint TEXT,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -100,10 +104,13 @@ Enable RLS and create policies for the `models` table:
 -- Enable Row Level Security
 ALTER TABLE models ENABLE ROW LEVEL SECURITY;
 
--- Policy: Anyone can view models
-CREATE POLICY "Models are viewable by everyone" 
+-- Policy: Anyone can view public models, authenticated users can view their own private models
+CREATE POLICY "Public models are viewable by everyone" 
   ON models FOR SELECT 
-  USING (true);
+  USING (
+    is_public = true 
+    OR auth.uid() = user_id
+  );
 
 -- Policy: Users can insert their own models
 CREATE POLICY "Users can insert their own models" 

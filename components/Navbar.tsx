@@ -2,16 +2,44 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Brain, User, LogOut, Menu, X } from 'lucide-react';
+import { Brain, User, LogOut, Menu, X, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+
+interface Profile {
+  username: string;
+}
 
 export default function Navbar() {
   const { user, signInWithGoogle, signOut, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('Navbar - User state:', user?.email || 'No user', 'Loading:', loading);
+    if (user) {
+      fetchUsername();
+    } else {
+      setUsername(null);
+    }
   }, [user, loading]);
+
+  const fetchUsername = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setUsername(data?.username || null);
+    } catch (error) {
+      console.error('Error fetching username:', error);
+    }
+  };
 
   const handleSignIn = async () => {
     try {
@@ -57,12 +85,23 @@ export default function Navbar() {
               Models
             </Link>
             {user && (
-              <Link 
-                href="/my-account" 
-                className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              >
-                My Account
-              </Link>
+              <>
+                <Link 
+                  href="/my-account" 
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  My Account
+                </Link>
+                {username && (
+                  <Link 
+                    href={`/${username}`}
+                    className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span>My Portfolio</span>
+                  </Link>
+                )}
+              </>
             )}
           </div>
 
@@ -125,13 +164,25 @@ export default function Navbar() {
               Models
             </Link>
             {user && (
-              <Link 
-                href="/my-account" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-              >
-                My Account
-              </Link>
+              <>
+                <Link 
+                  href="/my-account" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  My Account
+                </Link>
+                {username && (
+                  <Link 
+                    href={`/${username}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span>My Portfolio</span>
+                  </Link>
+                )}
+              </>
             )}
             <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
               {loading ? (

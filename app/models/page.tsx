@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase, Model } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { Search, Tag } from 'lucide-react';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
 
 export default function ModelsPage() {
+  const { user } = useAuth();
   const [models, setModels] = useState<Model[]>([]);
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ export default function ModelsPage() {
 
   useEffect(() => {
     fetchModels();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     filterModels();
@@ -24,9 +26,12 @@ export default function ModelsPage() {
 
   const fetchModels = async () => {
     try {
+      // The models page should ONLY show public models
+      // Private models should only be visible on the owner's portfolio page and My Account
       const { data, error } = await supabase
         .from('models')
         .select('*')
+        .eq('is_public', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Shree-212/ModelBoard#readme",
   "dependencies": {
+    "@huggingface/inference": "^4.13.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/postcss": "^4.1.16",
